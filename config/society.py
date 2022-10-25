@@ -1,8 +1,11 @@
 """
-Defines a whole society containing many people.
+Defines the possible rules of a society containing many people.
 
 :author: Max Milazzo
 """
+
+class Society
+
 
 """
 # defines the different "person types" and their statistics
