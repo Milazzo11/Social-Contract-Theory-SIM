@@ -1,0 +1,10 @@
+-> GA
+-> Person
+-> Society
+   - defines the "genes" that the GA will seek to maximize
+
+-> Sim
+   - create a new instance of the Society object
+   - run a semi-randomized algorithm using "gene" values to determine societal happiness levels
+   - run the GA to find the most optimal ways in which actions should be performed in this society to maximize happiness levels
+   
