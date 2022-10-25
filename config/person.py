@@ -74,9 +74,9 @@ class Person:
         self.clothing = 0
 
 
-# =======================
-# PUBLIC GETTER FUNCTIONS
-# =======================
+# =============================
+# PUBLIC VALUE ACCESS FUNCTIONS
+# =============================
 
 
     @property
@@ -87,6 +87,23 @@ class Person:
     @property
     def is_alive(self):
         return self.is_alive
+        
+    
+    @property
+    def get_resources(self):
+        return (
+            self.food,
+            self.water,
+            self.shelter,
+            self.clothing
+        )
+        
+    
+    def tax_resources(self, tax_list):
+        self.food -= tax_list[0]
+        self.water -= tax_list[1]
+        self.shelter -= tax_list[2]
+        self.clothing -= tax_list[3]
 
 
 # =======================
@@ -112,8 +129,6 @@ class Person:
         # returns intolerance and efficiency multiplier based on age
         return eff_mult, int_mult
 
-
-    # FOOD
     
     # food consumption
     def _c_food(self, c):
@@ -138,13 +153,7 @@ class Person:
         return -1
         # returns -1 on success
     
-    # food time
-    def _c_food_TIME(self, c)
-        return c * 0.001
 
-    
-    # WATER
-    
     # water consumption
     def _c_water(self, c):
     
@@ -168,12 +177,6 @@ class Person:
         return -1
         # returns -1 on success
 
-    # water time
-    def _c_water_TIME(self, c):
-        return c * 0.001
-
-
-    # SHELTER
 
     # shelter "consumption"
     def _c_shelter(self, c):
@@ -193,13 +196,7 @@ class Person:
         return -1
         # returns -1 on success
 
-    # shelter time
-    def _c_shelter_TIME(self, c):
-        return 0
 
-
-    # CLOTHING
-    
     # clothing consumption
     def _c_clothing(self, c):
     
@@ -220,10 +217,6 @@ class Person:
             
         return -1
         # returns -1 on success
-    
-    # clothing time 
-    def _c_clothing_TIME(self, c):
-        return 0
 
 
 # ======================
@@ -280,14 +273,8 @@ class Person:
         
         # production
         self.food = self.work_ability * eff_mult * w
-    
-    # food time
-    def _p_food_TIME(self, w):
-        return w
 
-    
-    # WATER
-    
+
     # water production
     def _p_water(self, w):
         eff_mult, int_mult = __age_p()
@@ -304,12 +291,6 @@ class Person:
         # production
         self.water = 10 * self.work_ability * eff_mult * w
     
-    # water time
-    def _p_water_TIME(self, w):
-        return w
-
-    
-    # SHELTER
     
     # shelter production
     def _p_shelter(self, w):
@@ -338,12 +319,6 @@ class Person:
         # production
         self.shelter = self.work_ability * eff_mult * w / 10
     
-    # shelter time
-    def _p_shelter_TIME(self, w):
-            return w
-    
-    
-    # CLOTHING
     
     # clothing production
     def _p_clothing(self, w):
@@ -367,17 +342,13 @@ class Person:
         # production
         self.clothing = self.work_ability * eff_mult * w / 2
     
-    # clothing time
-    def _p_clothing_TIME(self, w):
-            return w
-
 
 # ==================================================
 # CONSUMPTION/PRODUCTION GLOBAL ACCESS (DO NOT EDIT)
 # ==================================================
 
 
-    def resources(self):
+    def resource_funcs(self):
         """
         Returns consumption and production functions used.
         
@@ -386,14 +357,12 @@ class Person:
         """
         
         return (
-            ((self._c_food, _c_food_TIME), (self._p_food, self._p_food_TIME)),
-            ((self._c_water, _c_food_TIME), (self._p_food, self._p_food_TIME)),
-            ((self._c_shelter, _c_shelter_TIME), (self._p_shelter, self._p_shelter_TIME)),
-            ((self._c_clothing, _c_shelter_TIME), (self._p_clothing, self._p_clothing_TIME))
+            (self._c_food, self._p_food),
+            (self._c_water, self._p_water),
+            (self._c_shelter, self._p_shelter),
+            (self._c_clothing, self._p_clothing)
         )
         # consumption and production functions are linked
-        # each function is also linked with associated time function
-        # FORMAT: ( ... ((consumption, consumption_time), (production, production_time) ... )
 
 
 # ===============================
@@ -404,6 +373,7 @@ class Person:
 # more complex event functions that incorporate multiple actions across individuals are defined in Population class
 # functions do not return any values, but may edit these "person" values in various ways
 # can optionally take in one or more parameters
+# defines time functions relative to time period N=1
 # ===============================
 
     
@@ -421,11 +391,9 @@ class Person:
     # STEAL
     
     # steal from another person
-    def _a_steal(self, item):
+    def _a_steal(self):
         self.satisfaction += random()
-        
-        if item == "F":
-            self.food += 
+
     
     # steal time
     def _a_steal_TIME(self):
@@ -472,6 +440,7 @@ class Person:
 # more complex interactions with agent effect functions dealt with in Population class event functions
 # can optionally take in one or more parameters
 # functions do not return any values, but may edit these "person" values in various ways
+# defines time functions relative to time period N=1
 # ===================================
 
     
@@ -526,7 +495,7 @@ class Person:
 # =========================================
 
 
-    def actions(self):
+    def action_funcs(self):
         """
         Returns action functions used.
         
@@ -552,20 +521,24 @@ class Person:
 # Defines "next" function to move person formward 1 unit in time
 # Additional private functions can be called here as well
 # =====================================
-
-
-    def next(self):
-        """
-        "Moves" person through time and changes their values accordingly.
-        """
-        
-        self.age += 1
-        
-        # age death chance
+    
+    
+    # handles death possibility based on age
+    def __death_age_chance(self):
         if random() < (self.age ** 2) / 100000:
             self.is_alive = False
-        
-        # infection
+
+
+    # handles sleep
+    def __sleep_handle(self):
+        if self.rested < 0.1:
+            self.is_alive = False
+            
+        self.rested /= 2
+
+    
+    # handles infection
+    def __infection_handle(self):
         if self.infection != -1:
         
             self.infection += 1:
@@ -578,9 +551,54 @@ class Person:
             # recovery
             elif random() * 3 > self.infection:
                 self.infection = -1
+                
+                
+    def __resource_manager(self, schema_list):
+        """
+        Manages person resources for time period.
         
-        # sleep
-        if self.rested < 0.1:
-            self.is_alive = False
+        :param schema_list: holds resource management production and consumption schema
+        :type schema_list: list
+        """
+        
+        resource_func_list = self.resource_funcs()
+        
+        for index in range(len(resource_func_list)):
+            self.resource_func_list[index][1](schema_list[index][1])
+            # produce resources
             
-        self.rested /= 2
+            self.resource_func_list[index][0](schema_list[index][0])
+            # consume resources
+    
+    
+    def __action_manager(self, action_list):
+        """
+        """
+        
+        ### NEED TO REWORK PERSON-PERSON INTERACTION
+        # probably put all functions that affect multiple people in "People" class
+        # person class will only contain individual actions
+        
+
+    def next(self, schema_list, action_list):
+        """
+        "Moves" person through time and changes their values accordingly.
+        
+        :param schema_list: holds resource management production and consumption schema
+        [
+          [ consumption_func1_val, production_func1_val], 
+          [ consumption_func2_val, production_func2_val],
+          ...
+        ]
+        :param action_list: holds list of action functions
+        :type schema_list: list
+        """
+        
+        self.age += 1
+        
+        self.__death_age_chance()
+        self.__sleep_handle()
+        self.__infection_handle()
+        
+        self.__resource_manager(schema_list)
+        self.__action_manager(action_list)
