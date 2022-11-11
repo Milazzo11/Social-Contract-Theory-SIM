@@ -1,4 +1,3 @@
-Project in-progress
+CURRENT PERSONAL PROJECT ;)
 
-THEORY MODELLING DESCRIPTION:
-...
+Project in-progress!!!
